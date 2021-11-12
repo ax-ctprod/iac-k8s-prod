@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: be-app
+spec:
+  replicas: 4
+  template:
+    metadata:
+      labels:
+        app: "backend-v2"
+    spec:
+      containers:
+        - name: bev2
+          image: app-be:latest
+          env:
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: besecrets
+                  key: dbuser
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: besecrets
+                  key: dbpass
+            - name: DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: becsecrets
+                  key: dburl
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: be-lb
+  labels:
+    run: backend-v2
+spec:
+  selector:
+    app: backend-v2
+  type: LoadBalancer
+  ports:
+    - name: "http"
+      port: 80
+      targetPort: 8080
+      protocol: "TCP"
